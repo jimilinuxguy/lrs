@@ -26,6 +26,9 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import sys
 import re
 import struct
+rest_id = int(sys.argv[1])
+alert_type = 5
+pagers = "0"
 
 
 def encode_manchester( bin_list ):
@@ -76,29 +79,29 @@ def calculate_crc( pre, sink_word, rest_id, station_id, pager_n, alert_type ):
 # main program start                     #
 ##########################################
 
-try:
-    rest_id=int(raw_input('\nEnter restaurant id 0-255: '))
-except ValueError:
-    print "Not a number"
+# try:
+#     rest_id=int(raw_input('\nEnter restaurant id 0-255: '))
+# except ValueError:
+#     print "Not a number"
 
-try:
-    pagers=(raw_input('Enter one or more pager numbers 0-1023 : '))
-except ValueError:
-    print "Not a number"
+# try:
+#     pagers=(raw_input('Enter one or more pager numbers 0-1023 : '))
+# except ValueError:
+#     print "Not a number"
 
 pager_list = []
 pager_list = map( int, re.split('\s+',pagers))
 
-print '1 Flash 30 Seconds\n2 Flash 5 Minutes\n3 Flash/Beep 5X5\n4 Beep 3 Times\n5 Beep 5 Minutes\n6 Glow 5 Minutes\n7 Glow/Vib 15 Times\n10 Flash/Vib 1 Second\n68 beep 3 times\n'
+# print '1 Flash 30 Seconds\n2 Flash 5 Minutes\n3 Flash/Beep 5X5\n4 Beep 3 Times\n5 Beep 5 Minutes\n6 Glow 5 Minutes\n7 Glow/Vib 15 Times\n10 Flash/Vib 1 Second\n68 beep 3 times\n'
 
 
-try:
-    alert_type=int(raw_input('Enter alert type: '))
-except ValueError:
-    print "Not a number"
+# try:
+#     alert_type=int(raw_input('Enter alert type: '))
+# except ValueError:
+#     print "Not a number"
 
 
-handle = open('pager.bin', 'wb')
+handle = open('pager'+str(rest_id)+'.bin', 'wb')
 
 data = []
 for pager_n in pager_list:
