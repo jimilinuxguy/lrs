@@ -19,6 +19,7 @@ import signal
 from argparse import ArgumentParser
 from gnuradio.eng_arg import eng_float, intx
 from gnuradio import eng_notation
+from gnuradio import soapy
 
 
 pager_number = sys.argv[1]
@@ -32,10 +33,24 @@ class top_block(gr.top_block):
         # Variables
         ##################################################
         self.samp_rate = samp_rate = 2e6
+        self.center_freq = center_freq = 46775e4
 
         ##################################################
         # Blocks
         ##################################################
+        self.soapy_hackrf_sink_0 = None
+        dev = 'driver=hackrf'
+        stream_args = ''
+        tune_args = ['']
+        settings = ['']
+
+        self.soapy_hackrf_sink_0 = soapy.sink(dev, "fc32", 1, '',
+                                  stream_args, tune_args, settings)
+        self.soapy_hackrf_sink_0.set_sample_rate(0, samp_rate)
+        self.soapy_hackrf_sink_0.set_bandwidth(0, 0)
+        self.soapy_hackrf_sink_0.set_frequency(0, center_freq)
+        self.soapy_hackrf_sink_0.set_gain(0, 'AMP', False)
+        self.soapy_hackrf_sink_0.set_gain(0, 'VGA', min(max(16, 0.0), 47.0))
         self.blocks_repeat_0 = blocks.repeat(gr.sizeof_float*1, 3190)
         self.blocks_file_source_0 = blocks.file_source(gr.sizeof_float*1, './pager'+pager_number+'.bin', False, 0, 0)
         self.blocks_file_source_0.set_begin_tag(pmt.PMT_NIL)
@@ -48,6 +63,7 @@ class top_block(gr.top_block):
         # Connections
         ##################################################
         self.connect((self.analog_frequency_modulator_fc_0, 0), (self.blocks_file_sink_0, 0))
+        self.connect((self.analog_frequency_modulator_fc_0, 0), (self.soapy_hackrf_sink_0, 0))
         self.connect((self.blocks_file_source_0, 0), (self.blocks_repeat_0, 0))
         self.connect((self.blocks_repeat_0, 0), (self.analog_frequency_modulator_fc_0, 0))
 
@@ -57,7 +73,14 @@ class top_block(gr.top_block):
 
     def set_samp_rate(self, samp_rate):
         self.samp_rate = samp_rate
-        self.blocks_throttle_0.set_sample_rate(self.samp_rate)
+        self.soapy_hackrf_sink_0.set_sample_rate(0, self.samp_rate)
+
+    def get_center_freq(self):
+        return self.center_freq
+
+    def set_center_freq(self, center_freq):
+        self.center_freq = center_freq
+        self.soapy_hackrf_sink_0.set_frequency(0, self.center_freq)
 
 
 
@@ -75,8 +98,8 @@ def main(top_block_cls=top_block, options=None):
     signal.signal(signal.SIGTERM, sig_handler)
 
     tb.start()
-
-    tb.wait()
+    tb.stop()
+#    tb.wait()
 
 
 if __name__ == '__main__':
